@@ -1,0 +1,90 @@
+const int NUM_ROWS = 9;
+const int NUM_COLS = 8;
+
+int latchPin2 = 5;
+int dataPin2 = 6;
+int clockPin2 = 7;
+
+const int latchPin = A0;
+const int dataPin = A1;
+const int clockPin = A2;
+
+
+int gdataset[10][8] = { {114,251,219,219,219,219,255,126},
+{110,254,219,219,219,219,254,110},
+{192,193,195,198,204,216,240,224},
+{126,255,219,219,219,219,223,78},
+{114,251,219,219,219,219,223,78},
+{240,248,24,24,24,255,255,24},
+{66,195,219,219,219,219,255,126},
+{78,223,219,219,219,219,219,114},
+{19,51,99,255,255,3,3,3},
+{126,255,193,193,193,193,255,126} 
+};
+
+int data7seg[10] = {63, 6, 91, 79, 102, 109, 125, 7, 127, 103};
+int led[10] = {1, 2, 4, 8, 16, 32, 64, 128,0,0};
+//int led[10] = {128, 64, 32, 16, 8, 4, 2, 1, 0,128};
+
+void setup(){
+  Serial.begin(9600);
+  pinMode(latchPin2, OUTPUT);
+  pinMode(dataPin2, OUTPUT);  
+  pinMode(clockPin2, OUTPUT);
+
+  pinMode(latchPin, OUTPUT);
+  pinMode(dataPin, OUTPUT);
+  pinMode(clockPin, OUTPUT);
+}
+int off=0;
+
+void loop()                     
+{
+  if(off==1){
+    shiftOut(dataPin, clockPin, MSBFIRST, 0);
+    shiftOut(dataPin, clockPin, MSBFIRST, 0);
+    shiftOut(dataPin, clockPin, MSBFIRST, 0);
+    digitalWrite(latchPin, HIGH);
+    digitalWrite(latchPin, LOW);
+    shiftOut(dataPin2, clockPin2, MSBFIRST, 0);
+    digitalWrite(latchPin2, HIGH);
+    digitalWrite(latchPin2, LOW);
+  }
+
+  else{
+  for(int i=0;i<=9;i++){
+    for(int j=0;j<=9;j++){
+      for(int k=0; k<=7; k++){
+       disp7segled(i,j,k);
+      }
+      displayPixels(j,20);
+    }
+    if(i>=9){off=1;}
+  }
+  }
+}
+
+void disp7segled(int val1,int val2,int val3){
+   int digit_tens = data7seg[val1];
+   int digit_ones = data7seg[val2];
+   int ledcur = led[val3];
+    shiftOut(dataPin, clockPin, MSBFIRST, ledcur);
+    shiftOut(dataPin, clockPin, MSBFIRST, digit_tens);
+    shiftOut(dataPin, clockPin, MSBFIRST, digit_ones);
+    digitalWrite(latchPin, HIGH);
+    digitalWrite(latchPin, LOW);
+}
+
+void displayPixels(int val,int pdelay){
+ for(int m=0; m<pdelay; m++){
+   for(int row=0; row<NUM_ROWS; row++){
+   int gcur = gdataset[val][row];
+    shiftOut(dataPin2, clockPin2, MSBFIRST, 255-gcur);
+    shiftOut(dataPin2, clockPin2, MSBFIRST, B00000001 << row  );
+    digitalWrite(latchPin2, HIGH);
+    digitalWrite(latchPin2, LOW);
+    delayMicroseconds(1000);    
+    }
+ }
+}
+
